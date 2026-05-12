@@ -1,0 +1,8 @@
+.DS_Store
+*.pyc
+__pycache__/
+.omx/
+.codex/
+research_knowledge/
+outputs/
+wandb/
