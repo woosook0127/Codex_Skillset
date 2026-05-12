@@ -70,6 +70,19 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 - For paper-grounded field survey, paper cards, synthesis, and research Q&A, use `literature-field-surveyor`.
 - Use durable Markdown artifacts for handoffs and evidence when a task spans research, implementation, verification, or audit.
 
+## 6. Skill Routing Preflight
+
+**Route to the narrowest useful workflow before doing work.**
+
+Before answering or acting, classify the request as one or more of:
+`direct answer`, `research`, `paper intake`, `repo mapping`, `experiment`, `verification`, or `audit`.
+
+- If a direct answer is sufficient, answer directly; do not force a skill workflow.
+- If the narrowest single skill can solve the request, use only that skill.
+- If multiple skills are needed, compose an explicit chain and keep each handoff scoped.
+- Use `supervisor-intake` only when the work should become durable task state: cross-step ownership, handoff, branch intent, debug/audit gate, or long-running experiment/research management.
+- Use subagents only when independent lanes are clear and parallelism materially helps; the main Codex instance remains responsible for integrating and verifying their outputs.
+
 ---
 
 **These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
