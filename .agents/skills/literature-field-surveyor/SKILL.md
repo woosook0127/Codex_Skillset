@@ -222,6 +222,35 @@ Record rejected papers with brief reasons in `reading_queue.md` or `search_log.m
 
 Use reliable scholarly sources where possible: publisher pages, conference proceedings, arXiv, ACL Anthology, OpenReview, PubMed, IEEE/ACM/Springer pages, Semantic Scholar, DBLP, Google Scholar snippets when no better metadata source is available, official benchmark/dataset pages, and authors' project pages.
 
+## Search strategy upgrade
+
+Use a deliberate search strategy rather than a single keyword search:
+
+1. **Classify the search mode**:
+   - academic: papers, datasets, benchmarks, surveys, challenge reports
+   - technology: code releases, model cards, leaderboards, official implementations
+   - market or product context: only when the user's research question needs deployment or industry evidence
+2. **Expand seed queries** before selecting papers:
+   - task names and aliases
+   - dataset/challenge names
+   - metric names
+   - method-family names
+   - negative terms for failures, limitations, hallucination, artifacts, robustness, or ablations
+3. **Search source families**:
+   - scholarly indices: Semantic Scholar, arXiv, OpenReview, Google Scholar, DBLP
+   - venue or publisher pages: ACL, NeurIPS, ICML, ICLR, Interspeech, ICASSP, IEEE/ACM/Springer as relevant
+   - benchmark/dataset/challenge pages
+   - official code/model pages such as GitHub, Hugging Face, project pages, and leaderboards when implementation evidence matters
+4. **Use citation chaining**:
+   - backward references for foundations and baselines
+   - forward citations for follow-up work and criticism
+   - papers that share datasets, metrics, or challenge tracks
+5. **Search adversarially** for comparison papers:
+   - methods that solve the same problem with a different model family
+   - papers reporting failures, over-suppression, artifacts, hallucination, or robustness gaps
+   - strong baselines the user's proposed idea must beat
+6. Record accepted papers, rejected papers, search gaps, and follow-up queries in `search_log.md` or `reading_queue.md`.
+
 For each search batch, record:
 
 - Query string

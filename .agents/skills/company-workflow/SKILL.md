@@ -44,15 +44,23 @@ If `company/` is absent, do not invent hidden state. Either create only the spec
 
 ## Routing
 
+- Pre-work project/material analysis: use `analyze-project`.
+- Full paper-to-experiment research loop: use `research-to-experiment`.
 - Literature survey, paper cards, field Q&A: use `literature-field-surveyor`.
 - Paper-to-experiment packet: use `paper-intake`.
 - New idea novelty / baseline comparison screen: use `research-idea-screen`.
 - Repo mapping before design: use `framework-mapping` or `repo-audit`.
+- Implementation planning: use `implementation-plan`.
+- Plan execution: use `execute-plan`.
 - Experiment proposal: use `experiment-design`.
 - Feasibility decision before implementation: use `experiment-feasibility`.
 - Run execution from a ready spec: use `run-experiment`.
+- General test verification: use `run-test`.
 - Result interpretation: use `analyze-results`, then `skeptic-review` for final claims.
+- Document strategy, draft, or refinement: use `document-workflow`.
+- Artifact/document lint before handoff: use `artifact-audit`.
 - Gate verification: use `debug-review`, then `audit-review`.
+- Skill repository maintenance: use `skillset-sync`.
 
 ## Required Evidence
 

@@ -22,19 +22,25 @@ flowchart LR
     SK[".agents/skills<br/>Codex workflows"]
     CW["company-workflow<br/>durable coordination"]
     LIT["literature-field-surveyor<br/>paper evidence KB"]
+    IMPL["implementation skills<br/>plan/execute/test/report"]
     EXP["experiment skills<br/>design/run/analyze"]
+    DOC["document skills<br/>draft/refine/artifact audit"]
     QA["debug-review / audit-review<br/>quality gates"]
-    OUT[("Project artifacts<br/>research_knowledge / company / runs / reports")]
+    OUT[("Project artifacts<br/>research_knowledge / company / project_analysis / runs / reports")]
 
     USER --> AG
     AG --> SK
     SK --> CW
     SK --> LIT
+    SK --> IMPL
     SK --> EXP
+    SK --> DOC
     SK --> QA
     CW --> OUT
     LIT --> OUT
+    IMPL --> OUT
     EXP --> OUT
+    DOC --> OUT
     QA --> OUT
 ```
 
@@ -44,6 +50,8 @@ flowchart LR
 - `company-workflow`는 agent team runtime이 아니라 파일 기반 운영 규칙이다.
 - `literature-field-surveyor`는 field survey, paper card, synthesis, Q&A의 source of truth다.
 - 실험 설계와 실행은 literature card만으로 끝내지 않고 repo mapping, feasibility, result analysis, skeptical review로 이어간다.
+- 구현 작업은 `implementation-plan -> execute-plan -> run-test -> final-report`로 분리할 수 있다.
+- 문서 작업은 `document-workflow`가 맡고, 문서/연구 artifact의 품질 검사는 `artifact-audit`가 맡는다.
 - Debug와 Audit은 분리한다. 구현자가 스스로 최종 품질을 인증하지 않는다.
 - 실험이 실행됐다는 사실과 과학적 결론이 확인됐다는 사실을 분리한다.
 - OMX는 명시적으로 요청받을 때만 사용한다.
@@ -54,6 +62,7 @@ flowchart LR
 flowchart TB
     REQ["Human request"]
     SUP["supervisor-intake<br/>task/routing/acceptance"]
+    AP["analyze-project<br/>pre-work material map"]
     subgraph RESEARCH["Research / Evidence"]
         LFS["literature-field-surveyor<br/>field KB + paper cards"]
         RIS["research-idea-screen<br/>novelty + baseline screen"]
@@ -64,12 +73,22 @@ flowchart TB
         RA["repo-audit<br/>current repo reality"]
         FM["framework-mapping<br/>backend/spec/baseline fit"]
     end
+    subgraph IMPLEMENT["Implementation Loop"]
+        IP["implementation-plan<br/>scope + acceptance"]
+        EP["execute-plan<br/>surgical edits"]
+        RT["run-test<br/>graduated verification"]
+        FR["final-report<br/>change summary"]
+    end
     subgraph EXPERIMENT["Experiment Loop"]
         ED["experiment-design<br/>hypothesis/spec/baseline"]
         EF["experiment-feasibility<br/>GO / CONDITIONAL / NO_GO"]
         RUN["run-experiment<br/>command + artifacts"]
         AR["analyze-results<br/>metrics + claim status"]
         SR["skeptic-review<br/>accept/weaken/block"]
+    end
+    subgraph DOCS["Document / Artifact Loop"]
+        DW["document-workflow<br/>strategy/draft/refine"]
+        AA["artifact-audit<br/>read-only artifact check"]
     end
     subgraph GATES["Quality Gates"]
         DBG["debug-review<br/>PASS / FAIL"]
@@ -78,10 +97,16 @@ flowchart TB
     DONE["Durable result / next action"]
 
     REQ --> SUP
+    SUP --> AP
     SUP --> LFS
     SUP --> RIS
     SUP --> PI
     SUP --> RA
+    SUP --> IP
+    SUP --> DW
+    AP --> LFS
+    AP --> RA
+    AP --> DW
     RIS --> LFS
     PI --> PC
     PI --> FM
@@ -89,11 +114,17 @@ flowchart TB
     LFS --> RIS
     RA --> FM
     FM --> ED
+    FM --> IP
+    IP --> EP
+    EP --> RT
+    RT --> FR
+    FR --> DBG
     ED --> EF
     EF -->|GO or CONDITIONAL| RUN
     EF -->|NO_GO| DONE
     RUN --> AR
     AR --> SR
+    DW --> AA
     SR --> DBG
     DBG --> AUD
     AUD --> DONE
@@ -107,30 +138,40 @@ flowchart LR
         PAPER["Papers / PDFs / citations"]
         CODE["Repo files / configs / logs"]
         IDEA["Research idea / user goal"]
+        DOC["Drafts / plans / reports"]
     end
 
     subgraph SKILLS["Codex Skills"]
+        AP["analyze-project"]
         LIT["literature-field-surveyor"]
         MAP["repo-audit / framework-mapping"]
+        IMPL["implementation-plan / execute-plan / run-test"]
         DESIGN["experiment-design / feasibility"]
         EXEC["run-experiment / analyze-results"]
+        DOCSK["document-workflow / artifact-audit"]
         REVIEW["skeptic-review / debug-review / audit-review"]
     end
 
     subgraph OUTPUT["Durable Outputs"]
+        PA["project_analysis/..."]
         KB["research_knowledge/fields/..."]
         COMPANY["company/... TASK / HANDOFF / RESULT / AUDIT"]
         RUNS["runs / logs / metrics / checkpoints"]
         REPORT["final summary / next action"]
     end
 
-    PAPER --> LIT --> KB
+    PAPER --> AP --> LIT --> KB
     IDEA --> LIT
     IDEA --> DESIGN
     CODE --> MAP
+    CODE --> IMPL
+    DOC --> DOCSK
+    AP --> PA
     MAP --> DESIGN
+    IMPL --> REVIEW
     DESIGN --> COMPANY
     DESIGN --> EXEC --> RUNS
+    DOCSK --> REPORT
     EXEC --> REVIEW --> REPORT
     REVIEW --> COMPANY
 ```
@@ -141,19 +182,28 @@ flowchart LR
 |---|---|---|---|
 | `company-workflow` | company-style durable workflow 공통 규칙 | 장기 task, handoff, gate가 필요한 작업 | routing, artifact policy, closure rules |
 | `supervisor-intake` | 요청을 task와 next owner로 정규화 | 새 사용자 요청, 재라우팅 요청 | `TASK`, acceptance criteria, `HANDOFF` |
+| `analyze-project` | code/paper/doc 자료를 작업 전 분석 | repo, paper packet, draft set | `project_analysis/...`, next skill recommendation |
+| `research-to-experiment` | 논문 읽기부터 실험 검증까지 전체 연구 루프 연결 | 새 분야, target paper, 연구 아이디어 | skill chain, hypothesis, experiment path |
 | `literature-field-surveyor` | 논문 조사, paper card, synthesis, Q&A | 분야 조사, SOTA, 비교 논문, 논문 설명 | `research_knowledge/fields/...` |
 | `research-idea-screen` | 아이디어 novelty, repo overlap, baseline screen | 새 연구 아이디어, hypothesis | `IDEA`, 비교 논문, 최소 실험 방향 |
 | `paper-intake` | 논문을 executable research packet으로 변환 | paper, citation, PDF, note set | executable claims, dataset/model/eval packet |
 | `paper-critique` | 논문 claim의 약점과 위험 비판 | paper claim, reproduction plan | missing baselines, leakage risk, blocked claims |
 | `repo-audit` | repo 현실 파악 | architecture/refactor/experiment 전 사전 조사 | entrypoint/config/engine/metric map |
 | `framework-mapping` | idea/paper를 현재 backend에 매핑 | paper packet, model change, dataset idea | backend fit, copied variant recommendation |
+| `implementation-plan` | 구현 전 scope, acceptance, verification 계획 | code/model/doc 변경 요청 | surgical plan, target files, checks |
+| `execute-plan` | 승인되었거나 명확한 계획 실행 | implementation plan, small code task | changed files, execution notes, verification handoff |
+| `run-test` | syntax/import/smoke/functional/regression test 실행 | changed code, scripts, configs | exact commands, pass/fail, residual risk |
+| `final-report` | 계획-구현-검증 결과 요약 | plan, diff, test output, artifacts | concise or durable completion report |
 | `experiment-design` | 실행 가능한 실험 설계 | paper packet, idea, repo mapping | hypothesis, baseline, variant, metric, artifact plan |
 | `experiment-feasibility` | 실험 가능성 판정 | experiment proposal/spec | `GO`, `CONDITIONAL`, `NO_GO` |
 | `run-experiment` | 준비된 실험 실행 | canonical spec or command | command, logs, checkpoints, metrics, status |
 | `analyze-results` | 실험 결과 해석 | metrics, logs, predictions, run summaries | baseline comparison, claim status |
 | `skeptic-review` | 결론 수용 전 skeptical pass | result analysis, paper reproduction claim | accept/weaken/defer/block decision |
+| `document-workflow` | 문서 전략, 작성, 피드백 반영 | draft, notes, report/proposal 요청 | document path, evidence, unresolved claims |
+| `artifact-audit` | research/doc/plan artifact 품질 검사 | paper cards, plans, reports, drafts | artifact audit pass/fail and findings |
 | `debug-review` | audit 전 blocking debug gate | implementation output, logs, changed files | `PASS`, `PASS_WITH_WARNINGS`, `FAIL`, `URGENT_BLOCKER` |
 | `audit-review` | 최종 독립 감사 | pushed branch/result/debug evidence | `AUDIT_PASS`, `AUDIT_PASS_WITH_CAVEATS`, `AUDIT_FAIL` |
+| `skillset-sync` | skillset 검증, 문서화, sync, push | skill repo, consuming project | validated skill inventory, commit/push path |
 
 ## 활용 갈래
 
@@ -164,6 +214,8 @@ User: full-band 48 kHz speech enhancement 논문 조사하고 card로 정리해�
 Skill: literature-field-surveyor
 Output: research_knowledge/fields/<field>/papers, synthesis, qna
 ```
+
+검색 방식은 Claude `autopilot-research`의 장점을 흡수해 seed query expansion, source-family search, citation chaining, adversarial comparison search, code/model search를 기록한다. 다만 synthesis 근거는 여전히 local paper note로 제한한다.
 
 흐름:
 
@@ -213,10 +265,27 @@ Skills: research-idea-screen + literature-field-surveyor + framework-mapping
 
 ```text
 User: TF-Restormer 구조를 차용해서 lightweight 48 kHz SE 모델을 만들 수 있을지 repo 기준으로 봐줘.
-Skills: repo-audit -> framework-mapping -> experiment-design -> experiment-feasibility
+Skills: analyze-project -> repo-audit -> framework-mapping -> experiment-design -> experiment-feasibility
 ```
 
-### E. 실험 실행과 결과 해석
+### E. 구현 계획 / 실행 / 테스트 / 보고
+
+```text
+User: 이 feature를 구현하고 테스트까지 돌려줘.
+Skills: implementation-plan -> execute-plan -> run-test -> final-report
+```
+
+흐름:
+
+```mermaid
+flowchart LR
+    GOAL["implementation goal"] --> PLAN["implementation-plan"]
+    PLAN --> EXEC["execute-plan"]
+    EXEC --> TEST["run-test"]
+    TEST --> REPORT["final-report"]
+```
+
+### F. 실험 실행과 결과 해석
 
 ```text
 User: 이 spec으로 smoke run 실행하고 결과를 분석해줘.
@@ -234,11 +303,20 @@ flowchart LR
     SR --> CLAIM["claim status"]
 ```
 
-### F. 검증 / 감사
+### G. 문서 작성 / refinement / artifact audit
+
+```text
+User: 이 실험 결과로 논문 proposal 초안을 만들어줘.
+Skills: document-workflow -> artifact-audit
+```
+
+`document-workflow`는 문서 전략, draft, feedback 반영을 담당한다. `artifact-audit`는 문서나 research artifact가 source, 구조, coverage 측면에서 handoff 가능한지 읽기 전용으로 확인한다.
+
+### H. 검증 / 감사
 
 ```text
 User: 이 변경이 merge 가능한지 검증해줘.
-Skills: debug-review -> audit-review
+Skills: run-test -> debug-review -> audit-review
 ```
 
 `debug-review`는 실제 동작 검증에 가깝고, `audit-review`는 최종 독립 감사다.
@@ -260,6 +338,9 @@ Codex에게 명시적으로 skill을 지시할 수 있다.
 Use literature-field-surveyor to survey low-hallucination full-band SE.
 Use research-idea-screen to evaluate this high-band refinement idea.
 Use framework-mapping to map this proposal onto the current repo.
+Use implementation-plan then execute-plan for this refactor.
+Use run-test to verify the edited path.
+Use document-workflow to draft a proposal from these notes.
 Use experiment-feasibility to decide GO / NO_GO before implementation.
 Use debug-review to verify this change before audit.
 ```
@@ -270,6 +351,8 @@ Use debug-review to verify this change before audit.
 literature-field-surveyor 스킬로 이 분야 조사해줘.
 research-idea-screen 기준으로 이 아이디어 novelty 평가해줘.
 framework-mapping으로 현재 repo에 어떻게 들어갈지 봐줘.
+implementation-plan으로 구현 계획부터 잡아줘.
+document-workflow로 proposal 초안 만들어줘.
 ```
 
 ## 새 프로젝트에 적용
@@ -315,16 +398,31 @@ Broken symlink가 있으면 push하지 않는다.
 
 ## Claude Setting과의 차이
 
-이 저장소는 `https://github.com/dmlguq456/claude_setting`의 workflow-map 스타일을 참고했지만, 실행 모델은 다르다.
+이 저장소는 `https://github.com/dmlguq456/claude_setting`의 workflow-map 스타일과 유용한 skill 분해를 흡수했지만, 실행 모델은 Codex에 맞게 바꿨다.
 
 | 항목 | Claude Setting | Codex Skillset |
 |---|---|---|
 | 실행 단위 | Claude slash skills + Claude agents | Codex project-local skills |
 | Agent 정의 | `agents/*.md`가 callable agent처럼 동작 | custom native agent registry를 전제하지 않음 |
 | 협업 방식 | Claude agent orchestration | Codex main agent + skills + durable artifacts |
-| 장기 상태 | `.claude_reports/` | `research_knowledge/`, `company/`, runs/logs |
+| 장기 상태 | `.claude_reports/` | `research_knowledge/`, `company/`, `project_analysis/`, runs/logs |
 | OMX 사용 | 해당 없음 | 기본 비사용, 명시 요청 시만 |
-| 강점 | 자동 pipeline과 agent role 분리 | Codex에서 덜 헷갈리는 skill 중심 운영 |
+| 강점 | 자동 pipeline과 agent role 분리 | Codex에서 덜 헷갈리는 skill 중심 운영, 필요 시 native subagent 위임 |
+
+## Claude Setting에서 흡수한 기능
+
+| Claude skill 계열 | Codex 반영 |
+|---|---|
+| `analyze-project` | `analyze-project`로 재작성. `.claude_reports` 대신 `project_analysis/...`를 사용하고, 필요 시 `repo-audit`, `paper-intake`, `document-workflow`로 라우팅 |
+| `autopilot-research` | `literature-field-surveyor`의 검색 전략에 query expansion, source-family search, citation chaining, adversarial comparison, code/model search 추가 |
+| `init-plan` / `refine-plan` | `implementation-plan`으로 병합 |
+| `execute-plan` | Codex editing rule과 baseline preservation을 반영한 `execute-plan`으로 재작성 |
+| `run-test` | read-only graduated verification skill인 `run-test`로 재작성 |
+| `final-report` | `final-report`로 재작성 |
+| `autopilot-doc` / `init-doc-strategy` / `refine-doc` / `autopilot-refine` | `document-workflow`로 병합 |
+| `audit` | 최종 audit과 분리된 read-only `artifact-audit`로 재작성 |
+| `sync-skills` | Notion/Claude 의존성을 제거한 Git-backed `skillset-sync`로 재작성 |
+| `autopilot-code` | `implementation-plan -> execute-plan -> run-test -> final-report` chain으로 반영 |
 
 ## Non-Goals
 
@@ -340,6 +438,8 @@ Broken symlink가 있으면 push하지 않는다.
 mindmap
   root((Codex Skillset))
     Evidence
+      analyze-project
+      research-to-experiment
       literature-field-surveyor
       paper-intake
       paper-critique
@@ -347,16 +447,25 @@ mindmap
     Repo Reality
       repo-audit
       framework-mapping
+    Implementation
+      implementation-plan
+      execute-plan
+      run-test
+      final-report
     Experiment
       experiment-design
       experiment-feasibility
       run-experiment
       analyze-results
       skeptic-review
+    Documents
+      document-workflow
+      artifact-audit
     Gates
       debug-review
       audit-review
     Coordination
       company-workflow
       supervisor-intake
+      skillset-sync
 ```

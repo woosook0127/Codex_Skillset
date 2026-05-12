@@ -66,7 +66,7 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 
 - Treat `.agents/skills/*/SKILL.md` as the project-local workflow layer.
 - Do not invoke `omx`, `omx team`, tmux worker panes, `.codex/agents/*.toml`, or `.omx/state` unless the user explicitly asks for OMX operation.
-- For company-style coordination, use `company-workflow` plus the specific skills such as `supervisor-intake`, `paper-intake`, `research-idea-screen`, `framework-mapping`, `experiment-design`, `experiment-feasibility`, `run-experiment`, `analyze-results`, `debug-review`, and `audit-review`.
+- For company-style coordination, use `company-workflow` plus the specific skills such as `supervisor-intake`, `analyze-project`, `paper-intake`, `research-idea-screen`, `framework-mapping`, `implementation-plan`, `execute-plan`, `experiment-design`, `experiment-feasibility`, `run-experiment`, `run-test`, `analyze-results`, `debug-review`, `artifact-audit`, and `audit-review`.
 - For paper-grounded field survey, paper cards, synthesis, and research Q&A, use `literature-field-surveyor`.
 - Use durable Markdown artifacts for handoffs and evidence when a task spans research, implementation, verification, or audit.
 
@@ -75,7 +75,7 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 **Route to the narrowest useful workflow before doing work.**
 
 Before answering or acting, classify the request as one or more of:
-`direct answer`, `research`, `paper intake`, `repo mapping`, `experiment`, `verification`, or `audit`.
+`direct answer`, `research`, `paper intake`, `repo mapping`, `implementation`, `experiment`, `testing`, `documentation`, `verification`, `artifact audit`, `final audit`, or `skillset maintenance`.
 
 - If a direct answer is sufficient, answer directly; do not force a skill workflow.
 - If the narrowest single skill can solve the request, use only that skill.
